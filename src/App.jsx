@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Derived from FIT file + Runalyze dashboard
 // Max HR: 186 bpm (observed mile 3 of TT), Resting HR: 63 bpm
@@ -485,9 +485,22 @@ const ZonePill = ({zone}) => {
   );
 };
 
+const PLAN_START = new Date(2026, 3, 13);
+
+function getCurrentWeek() {
+  const today = new Date();
+  const elapsed = Math.floor((today - PLAN_START) / (7 * 24 * 60 * 60 * 1000));
+  return Math.min(Math.max(elapsed + 1, 1), weeks.length);
+}
+
 export default function TrainingPlan() {
   const [activeBlock, setActiveBlock] = useState("all");
-  const [expandedWeek, setExpandedWeek] = useState(null);
+  const [expandedWeek, setExpandedWeek] = useState(getCurrentWeek);
+  const currentWeek = getCurrentWeek();
+  const currentWeekRef = useRef(null);
+  useEffect(() => {
+    currentWeekRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
   const filtered = weeks.filter(w => activeBlock==="all"?true:activeBlock==="1"?w.block===1:w.block===2);
   const isTTWeek = w => w.sessions.some(s=>s.type==="tt");
   const maxSec=1484,minSec=1199,range=maxSec-minSec;
@@ -563,13 +576,14 @@ export default function TrainingPlan() {
         <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>
           {filtered.map(w=>{
             const isOpen=expandedWeek===w.week;
+            const isCurrent=w.week===currentWeek;
             const isTT=isTTWeek(w);
             const isGoal=w.week===32;
             const phaseCol=phaseColors[w.phase]||"#64748b";
             return (
-              <div key={w.week} style={{
-                border:isGoal?"2px solid #f43f5e":isTT?"1.5px solid #f97316":"1.5px solid #e2e8f0",
-                borderRadius:8,background:isGoal?"#fff5f5":"white",overflow:"hidden",
+              <div key={w.week} ref={isCurrent?currentWeekRef:null} style={{
+                border:isGoal?"2px solid #f43f5e":isCurrent?"2px solid #0ea5e9":isTT?"1.5px solid #f97316":"1.5px solid #e2e8f0",
+                borderRadius:8,background:isGoal?"#fff5f5":isCurrent?"#f0f9ff":"white",overflow:"hidden",
                 boxShadow:isOpen?"0 4px 16px rgba(0,0,0,0.08)":"0 1px 2px rgba(0,0,0,0.04)",
               }}>
                 <button onClick={()=>setExpandedWeek(isOpen?null:w.week)}
@@ -587,6 +601,12 @@ export default function TrainingPlan() {
                         <span style={{fontSize:"0.82rem",fontWeight:600,color:"#0f172a",fontFamily:"monospace"}}>{w.dates}</span>
                         <span style={{fontSize:"0.61rem",padding:"0.1rem 0.45rem",borderRadius:3,
                           background:phaseCol+"18",color:phaseCol,border:`1px solid ${phaseCol}40`,fontFamily:"monospace"}}>{w.phase}</span>
+                        {isCurrent&&(
+                          <span style={{fontSize:"0.61rem",background:"#0ea5e9",color:"white",
+                            padding:"0.1rem 0.45rem",borderRadius:3,fontFamily:"monospace",fontWeight:700}}>
+                            NOW
+                          </span>
+                        )}
                         {isTT&&!isGoal&&(
                           <span style={{fontSize:"0.61rem",background:"#fff7ed",color:"#c2410c",
                             border:"1px solid #fed7aa",padding:"0.1rem 0.45rem",borderRadius:3,fontFamily:"monospace"}}>

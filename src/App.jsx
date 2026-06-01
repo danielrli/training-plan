@@ -4,58 +4,60 @@ import { useState } from "react";
 // Max HR: 186 bpm (observed mile 3 of TT), Resting HR: 63 bpm
 // Karvonen (HRR) zones — HRR = 123 bpm
 // Z1  Recovery    <50% HRR  → <125 bpm
-// Z2  Easy        50–65%    → 125–143 bpm
-// Z3  Moderate    65–75%    → 143–155 bpm
-// Z4  Threshold   75–87%    → 155–170 bpm
-// Z5  VO2max      87–95%    → 170–180 bpm
-// Z5+ Race        95–100%   → 180–186 bpm
+// Calibrated to max HR 195 (May 31 TT), RHR 63, HRR 132.
+// Z2  Easy        50–65%    → 129–149 bpm
+// Z3  Moderate    65–75%    → 149–162 bpm
+// Z4  Threshold   75–87%    → 162–178 bpm
+// Z5  VO2max      87–95%    → 178–188 bpm
+// Z5+ Race        95–100%   → 188–195 bpm
 
+// Zones calibrated to max HR 195 (May 31 TT), RHR 63, HRR 132. Uses same % HRR boundaries as before.
 const ZONES = {
-  Z1:  { label: "Z1 · Recovery",  range: "<125 bpm",    color: "#94a3b8", bg: "#f8fafc", border: "#e2e8f0", use: "Full recovery runs" },
-  Z2:  { label: "Z2 · Easy",      range: "125–143 bpm", color: "#10b981", bg: "#f0fdf4", border: "#bbf7d0", use: "All easy days" },
-  Z3:  { label: "Z3 · Moderate",  range: "143–155 bpm", color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe", use: "Warm-up / cool-down" },
-  Z4:  { label: "Z4 · Threshold", range: "155–170 bpm", color: "#d97706", bg: "#fffbeb", border: "#fde68a", use: "Threshold sessions" },
-  Z5:  { label: "Z5 · VO2max",    range: "170–180 bpm", color: "#ea580c", bg: "#fff7ed", border: "#fed7aa", use: "Interval sessions" },
-  Z5p: { label: "Z5+ · Race",     range: "180–186 bpm", color: "#e11d48", bg: "#fff1f2", border: "#fecdd3", use: "5K race effort" },
+  Z1:  { label: "Z1 · Recovery",  range: "<129 bpm",    color: "#94a3b8", bg: "#f8fafc", border: "#e2e8f0", use: "Full recovery runs" },
+  Z2:  { label: "Z2 · Easy",      range: "129–149 bpm", color: "#10b981", bg: "#f0fdf4", border: "#bbf7d0", use: "All easy days" },
+  Z3:  { label: "Z3 · Moderate",  range: "149–162 bpm", color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe", use: "Warm-up / cool-down" },
+  Z4:  { label: "Z4 · Threshold", range: "162–178 bpm", color: "#d97706", bg: "#fffbeb", border: "#fde68a", use: "Threshold sessions" },
+  Z5:  { label: "Z5 · VO2max",    range: "178–188 bpm", color: "#ea580c", bg: "#fff7ed", border: "#fed7aa", use: "Interval sessions" },
+  Z5p: { label: "Z5+ · Race",     range: "188–195 bpm", color: "#e11d48", bg: "#fff1f2", border: "#fecdd3", use: "5K race effort" },
 };
 
 const weeks = [
   {
     week:1, dates:"Apr 13–19", block:1, miles:30, phase:"Base", target5k:null,
     sessions:[
-      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 125–143 bpm. Full conversation possible. Add 4×20s strides at end — HR will spike briefly, that's fine."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU to Z2 · 4×8min building into Z4 (155–170 bpm) w/ 90s easy jog · CD to Z2. Don't start reps above 155 — let HR climb naturally."},
-      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1–Z2 · stay under 143 bpm. True recovery. If HR climbs above 145, slow down."},
-      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 130–143 bpm. Aerobic build. Slight drift to 148 in final mile is fine."},
+      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 130–149 bpm. Full conversation possible. Add 4×20s strides at end — HR will spike briefly, that's fine."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU to Z2 · 4×8min building into Z4 (162–178 bpm) w/ 90s easy jog · CD to Z2. Don't start reps above 162 — let HR climb naturally."},
+      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1–Z2 · stay under 149 bpm. True recovery. If HR climbs above 151, slow down."},
+      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 135–149 bpm. Aerobic build. Slight drift to 154 in final mile is fine."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Non-negotiable. Walk, stretch, sleep."},
-      {day:"Sat",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 · 125–143 bpm."},
-      {day:"Sun",type:"long",miles:6, label:"Long Run 6mi", zone:"Z2", detail:"Z2 · 130–145 bpm. Comfortable. No HR spikes."},
+      {day:"Sat",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 · 130–149 bpm."},
+      {day:"Sun",type:"long",miles:6, label:"Long Run 6mi", zone:"Z2", detail:"Z2 · 135–151 bpm. Comfortable. No HR spikes."},
     ],
     notes:"Your Runalyze monotony was flagged at 50% — your easy and hard days feel too similar. Heart rate fixes this: if easy-day HR is above 148, you're not recovering. Slow down until the number is right, regardless of how slow that feels.",
   },
   {
     week:2, dates:"Apr 20–26", block:1, miles:28, phase:"Base", target5k:"24:30",
     sessions:[
-      {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 · 125–143 bpm. Extra rest before TT Sunday."},
-      {day:"Tue",type:"quality",miles:6, label:"Threshold Tempo", zone:"Z4", detail:"WU to Z2 · 25min holding Z4 (155–170 bpm) continuously · CD. HR should stabilise mid-Z4 after 5–8min warmup lag."},
-      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 130 bpm. Short and very easy."},
-      {day:"Thu",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1–Z2. TT taper. Nothing above 140."},
+      {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 · 130–149 bpm. Extra rest before TT Sunday."},
+      {day:"Tue",type:"quality",miles:6, label:"Threshold Tempo", zone:"Z4", detail:"WU to Z2 · 25min holding Z4 (162–178 bpm) continuously · CD. HR should stabilise mid-Z4 after 5–8min warmup lag."},
+      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 135 bpm. Short and very easy."},
+      {day:"Thu",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1–Z2. TT taper. Nothing above 146."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi + Strides", zone:"Z2", detail:"Z2 easy + 4×20s strides. HR will spike during strides — expected."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-24:30. WU 10–15min to Z3. Race: Z4 first 800m → build to Z5 by mile 2 → finish Z5+ (180–186 bpm). Compare HR profile to your 24:44 FIT file."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-24:30. WU 10–15min to Z3. Race: Z4 first 800m → build to Z5 by mile 2 → finish Z5+ (189–195 bpm). Compare HR profile to your 24:44 FIT file."},
     ],
     notes:"HR blueprint for this TT: Mile 1 avg ~170 (Z5 low), Mile 2 ~176, Mile 3 ~182+. Your 24:44 showed this pattern — replicate it with a slightly faster start.",
   },
   {
     week:3, dates:"Apr 27–May 3", block:1, miles:31, phase:"Base", target5k:null,
     sessions:[
-      {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 130. TT recovery. Go slower than feels necessary."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 5×7min in Z4 (155–170 bpm) w/ 90s jog · CD. Same HR target — check if it feels easier than Week 1."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 130–143 bpm."},
-      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 135. TT recovery. Go slower than feels necessary."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 5×7min in Z4 (162–178 bpm) w/ 90s jog · CD. Same HR target — check if it feels easier than Week 1."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 135–149 bpm."},
+      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
     ],
     notes:"Review your TT HR data. Was Mile 2 slow due to fatigue or pacing? If HR was already at 180+ in mile 1, you went out too hot — not undertrained.",
   },
@@ -63,38 +65,38 @@ const weeks = [
     week:4, dates:"May 4–10", block:1, miles:32, phase:"Base", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 base + 6×20s strides. Strides should briefly hit Z5+ — that's their purpose."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 30min holding Z4 (155–170 bpm) · CD. Longest tempo yet. HR drift to 172 in final 5min is acceptable cardiac drift."},
-      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 130. Recovery."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 30min holding Z4 (162–178 bpm) · CD. Longest tempo yet. HR drift to 180 in final 5min is acceptable cardiac drift."},
+      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 135. Recovery."},
       {day:"Thu",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides. Second stride day — start introducing faster turnover."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
     ],
     notes:"First week with two stimulus days (Tue tempo + Thu strides). Thursday average HR should still be Z2 — the strides are brief Z5+ bursts embedded in easy running.",
   },
   {
     week:5, dates:"May 11–17", block:1, miles:32, phase:"Build", target5k:null,
     sessions:[
-      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 130–143 bpm."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 3×12min in Z4 (158–170 bpm) w/ 2min Z1 jog · CD. Longer reps. Focus on even HR — don't spike rep 1."},
-      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 130."},
-      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 135–149 bpm."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 3×12min in Z4 (165–178 bpm) w/ 2min Z1 jog · CD. Longer reps. Focus on even HR — don't spike rep 1."},
+      {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · under 135."},
+      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:5, label:"Easy 5mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides."},
-      {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
     ],
     notes:"If HR climbs above 172 on rep 1 of the cruise intervals, you're in Z5 not Z4. The zone is the target, not the clock.",
   },
   {
     week:6, dates:"May 18–24", block:1, miles:34, phase:"Build", target5k:null,
     sessions:[
-      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 130–143 bpm."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 35min continuous Z4 (158–170 bpm) · CD. Aim to start at 158, finish at 170. Drift fine, spike is not."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130. Extra recovery given volume jump."},
+      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 135–149 bpm."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 35min continuous Z4 (165–178 bpm) · CD. Aim to start at 165, finish at 178. Drift fine, spike is not."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135. Extra recovery given volume jump."},
       {day:"Thu",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 · 130–145 bpm. First 9-miler."},
+      {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 · 135–151 bpm. First 9-miler."},
     ],
     notes:"34 miles — new weekly high. Higher fatigue creates a temptation to run easy days at Z3 instead of Z2. Resist. The easy-day HR discipline is what makes the quality days work.",
   },
@@ -102,22 +104,22 @@ const weeks = [
     week:7, dates:"May 25–31", block:1, miles:28, phase:"Build", target5k:"23:45",
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2. TT taper starts."},
-      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (158–170 bpm) w/ 90s jog · CD. Short — just priming the system."},
-      {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 · under 128."},
+      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (172–186 bpm) w/ 90s jog · CD. Short — just priming the system."},
+      {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 · under 134."},
       {day:"Thu",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1. Keep fresh."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5", detail:"Target sub-23:45. Race by HR: first 400m at Z4 ceiling (168–170) · Mile 1 settle at Z5 low (172–175) · Mile 2 hold Z5 (175–178) · Mile 3 build to Z5+ (180+). Finish at max."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL — 23:42 ✓", zone:"Z5", detail:"RESULT: 23:42 (7:27 / 7:40 / 7:46 + finish kick). Avg HR 179, max 195 (new high). Beat sub-23:45 target by 3 sec. Pacing flipped from April's catastrophic mile-2 collapse to a controlled positive split. Cardiovascular-limited, not pace-limited."},
     ],
-    notes:"Second TT. If the same HR now produces faster splits than April, the threshold work is converting. A 60-second improvement is on track.",
+    notes:"Hit the target — 23:42, 62 sec faster than April baseline. Honest TT, paced from the gun and held it. New max HR 195 → zones recalibrated. Next TT (W11) targets sub-23:00; aim for even splits ~7:35/mi rather than going out at 7:27 again.",
   },
   {
     week:8, dates:"Jun 1–7", block:1, miles:30, phase:"Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · TT recovery. Under 130."},
-      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 4×10min Z4 (160–170 bpm) w/ 90s jog · CD."},
+      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 4×10min Z4 (167–178 bpm) w/ 90s jog · CD."},
       {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:5, label:"Easy 5mi + Strides", zone:"Z2", detail:"Z2 + 5×20s strides."},
       {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 long."},
@@ -127,13 +129,13 @@ const weeks = [
   {
     week:9, dates:"Jun 8–14", block:1, miles:34, phase:"Build", target5k:null,
     sessions:[
-      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 130–143 bpm."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 38min Z4 (160–170 bpm) continuous · CD."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130."},
-      {day:"Thu",type:"quality",miles:6, label:"Easy + Strides + 200m Reps", zone:"Z5p", detail:"5mi Z2 · 4×20s strides · 4×200m at Z5+ (180–186 bpm) w/ 2min walk. First taste of race HR. Each rep: ~45–55s. HR may not fully stabilise — that's fine, it's neuromuscular work."},
+      {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 · 135–149 bpm."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 38min Z4 (167–178 bpm) continuous · CD."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135."},
+      {day:"Thu",type:"quality",miles:6, label:"Easy + Strides + 200m Reps", zone:"Z5p", detail:"5mi Z2 · 4×20s strides · 4×200m at Z5+ (189–195 bpm) w/ 2min walk. First taste of race HR. Each rep: ~45–55s. HR may not fully stabilise — that's fine, it's neuromuscular work."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
     ],
     notes:"First exposure to Z5+ (180–186 bpm) — your 5k race zone. The 200m reps are short enough that HR may spike and drop; what matters is you're training the body to fire at that intensity.",
   },
@@ -141,9 +143,9 @@ const weeks = [
     week:10, dates:"Jun 15–21", block:1, miles:35, phase:"Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 5×10min Z4 (160–170 bpm) w/ 90s jog · CD. Volume peak for Block 1 threshold work."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130."},
-      {day:"Thu",type:"easy",miles:9, label:"Medium-Long 9mi", zone:"Z2", detail:"Z2 · 130–145 bpm."},
+      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 5×10min Z4 (167–178 bpm) w/ 90s jog · CD. Volume peak for Block 1 threshold work."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135."},
+      {day:"Thu",type:"easy",miles:9, label:"Medium-Long 9mi", zone:"Z2", detail:"Z2 · 135–151 bpm."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 long."},
@@ -154,12 +156,12 @@ const weeks = [
     week:11, dates:"Jun 22–28", block:1, miles:28, phase:"Build", target5k:"23:00",
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2. TT taper."},
-      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (160–170 bpm) w/ 90s jog · CD."},
-      {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 · under 128."},
+      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (167–178 bpm) w/ 90s jog · CD."},
+      {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 · under 133."},
       {day:"Thu",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 easy."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5", detail:"Target sub-23:00. Block 1 checkpoint. HR blueprint: Mile 1 → Z5 low (172–175). Mile 2 → Z5 mid (175–178). Mile 3 → Z5+ (180–186). Check if Z5+ feels more sustainable than in April."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5", detail:"Target sub-23:00. Block 1 checkpoint. HR blueprint: Mile 1 → Z5 low (180–183). Mile 2 → Z5 mid (183–186). Mile 3 → Z5+ (189–195). Check if Z5+ feels more sustainable than in April."},
     ],
     notes:"Block 1 decision gate. Sub-23:00 confirms Block 2 on schedule. Sub-23:30 still workable. Above 23:30 — add 2 more threshold weeks before transitioning.",
   },
@@ -167,7 +169,7 @@ const weeks = [
     week:12, dates:"Jun 29–Jul 5", block:1, miles:31, phase:"Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · TT recovery."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 35min Z4 (160–170 bpm) · CD."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 35min Z4 (167–178 bpm) · CD."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
       {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 aerobic."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
@@ -180,9 +182,9 @@ const weeks = [
     week:13, dates:"Jul 6–12", block:1, miles:35, phase:"Peak Base", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 4×12min Z4 (162–170 bpm) w/ 90s jog · CD. Deeper into Z4."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130."},
-      {day:"Thu",type:"quality",miles:6, label:"Easy + 400m Race Reps", zone:"Z5p", detail:"5mi Z2 · 6×400m at Z5+ (180–186 bpm) w/ 2min walk. HR should stabilise at 182–186 mid-rep. If rep 5–6 can't reach 180, reduce to 4 reps."},
+      {day:"Tue",type:"quality",miles:8, label:"Threshold Cruise Intervals", zone:"Z4", detail:"WU · 4×12min Z4 (169–178 bpm) w/ 90s jog · CD. Deeper into Z4."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135."},
+      {day:"Thu",type:"quality",miles:6, label:"Easy + 400m Race Reps", zone:"Z5p", detail:"5mi Z2 · 6×400m at Z5+ (189–195 bpm) w/ 2min walk. HR should stabilise at 190–195 mid-rep. If rep 5–6 can't reach 189, reduce to 4 reps."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
       {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 long."},
@@ -193,9 +195,9 @@ const weeks = [
     week:14, dates:"Jul 13–19", block:1, miles:36, phase:"Peak Base", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 40min Z4 (162–170 bpm) · CD. HR drift to 173–174 in the final 8min is acceptable cardiac drift."},
+      {day:"Tue",type:"quality",miles:7, label:"Threshold Tempo", zone:"Z4", detail:"WU · 40min Z4 (169–178 bpm) · CD. HR drift to 181–182 in the final 8min is acceptable cardiac drift."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 easy."},
-      {day:"Thu",type:"easy",miles:10, label:"Medium-Long 10mi", zone:"Z2", detail:"Z2 · 130–145 bpm. Biggest medium-long yet."},
+      {day:"Thu",type:"easy",miles:10, label:"Medium-Long 10mi", zone:"Z2", detail:"Z2 · 135–151 bpm. Biggest medium-long yet."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 long."},
@@ -206,12 +208,12 @@ const weeks = [
     week:15, dates:"Jul 20–26", block:1, miles:27, phase:"Peak Base", target5k:"22:30",
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2. TT taper."},
-      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (162–170 bpm) · CD."},
+      {day:"Tue",type:"quality",miles:5, label:"Short Threshold Sharpener", zone:"Z4", detail:"WU · 2×10min Z4 (169–178 bpm) · CD."},
       {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 easy."},
       {day:"Thu",type:"easy",miles:3, label:"Easy 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides to Z5+."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi", zone:"Z1", detail:"Very easy. Under 130. Legs should feel springy."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-22:30. Block 1 final TT. Goal: first 600m build to Z5 (172–175) → mile 2 hold Z5 (176–179) → mile 3 Z5+ (180–186). Finish emptied."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-22:30. Block 1 final TT. Goal: first 600m build to Z5 (180–183) → mile 2 hold Z5 (184–187) → mile 3 Z5+ (189–195). Finish emptied."},
     ],
     notes:"Block 1 final assessment. Sub-22:30 sets up a legitimate sub-20 chase in Block 2. Use the HR ceiling from this TT to calibrate Block 2 zone targets — if your max was 184 not 186, adjust Z5+ accordingly.",
   },
@@ -219,7 +221,7 @@ const weeks = [
     week:16, dates:"Jul 27–Aug 2", block:2, miles:30, phase:"Transition", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · TT recovery. Under 130."},
-      {day:"Tue",type:"quality",miles:6, label:"VO2max Intro: Short Intervals", zone:"Z5", detail:"WU to Z2 · 6×3min in Z5 (170–180 bpm) w/ 3min Z1 jog · CD. Block 2 begins. HR may take 60–90s to reach Z5 per rep — that's lag, not failure."},
+      {day:"Tue",type:"quality",miles:6, label:"VO2max Intro: Short Intervals", zone:"Z5", detail:"WU to Z2 · 6×3min in Z5 (178–189 bpm) w/ 3min Z1 jog · CD. Block 2 begins. HR may take 60–90s to reach Z5 per rep — that's lag, not failure."},
       {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
       {day:"Thu",type:"easy",miles:8, label:"Medium-Long 8mi", zone:"Z2", detail:"Z2 aerobic."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
@@ -232,9 +234,9 @@ const weeks = [
     week:17, dates:"Aug 3–9", block:2, miles:33, phase:"VO2max Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:6, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×4min in Z5 (172–180 bpm) w/ 3min Z1 jog · CD. Hold upper band of Z5 on reps 3–5."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130. Intervals are taxing — be strict here."},
-      {day:"Thu",type:"quality",miles:6, label:"Threshold Tempo", zone:"Z4", detail:"WU · 25min Z4 (160–170 bpm) · CD. Shorter now — quality over volume."},
+      {day:"Tue",type:"quality",miles:6, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×4min in Z5 (180–189 bpm) w/ 3min Z1 jog · CD. Hold upper band of Z5 on reps 3–5."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135. Intervals are taxing — be strict here."},
+      {day:"Thu",type:"quality",miles:6, label:"Threshold Tempo", zone:"Z4", detail:"WU · 25min Z4 (167–178 bpm) · CD. Shorter now — quality over volume."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 long."},
@@ -245,9 +247,9 @@ const weeks = [
     week:18, dates:"Aug 10–16", block:2, miles:34, phase:"VO2max Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×4min in Z5 (172–180 bpm) w/ 3min Z1 jog · CD. Six reps."},
-      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 130."},
-      {day:"Thu",type:"quality",miles:6, label:"Mixed: Z4 primer + Z5+ Race Reps", zone:"Z5p", detail:"WU · 15min Z4 (162–170) · 3min jog · 4×400m at Z5+ (180–186 bpm) w/ 90s jog · CD. The Z4 block pre-fatigues you so the fast reps simulate racing on tired legs."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×4min in Z5 (180–189 bpm) w/ 3min Z1 jog · CD. Six reps."},
+      {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · under 135."},
+      {day:"Thu",type:"quality",miles:6, label:"Mixed: Z4 primer + Z5+ Race Reps", zone:"Z5p", detail:"WU · 15min Z4 (169–178) · 3min jog · 4×400m at Z5+ (189–195 bpm) w/ 90s jog · CD. The Z4 block pre-fatigues you so the fast reps simulate racing on tired legs."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 long."},
@@ -258,9 +260,9 @@ const weeks = [
     week:19, dates:"Aug 17–23", block:2, miles:35, phase:"VO2max Build", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min in Z5 (174–180 bpm) w/ 3min Z1 jog · CD. Longer reps — more time at VO2max. HR should stabilise within 90s; if it keeps climbing past 182, you started too hard."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min in Z5 (182–189 bpm) w/ 3min Z1 jog · CD. Longer reps — more time at VO2max. HR should stabilise within 90s; if it keeps climbing past 182, you started too hard."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 · strict."},
-      {day:"Thu",type:"easy",miles:9, label:"Medium-Long 9mi", zone:"Z2", detail:"Z2 · 130–145 bpm. One aerobic-only day this week."},
+      {day:"Thu",type:"easy",miles:9, label:"Medium-Long 9mi", zone:"Z2", detail:"Z2 · 135–151 bpm. One aerobic-only day this week."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:9, label:"Long Run 9mi", zone:"Z2", detail:"Z2 long."},
@@ -271,12 +273,12 @@ const weeks = [
     week:20, dates:"Aug 24–30", block:2, miles:27, phase:"VO2max Build", target5k:"21:30",
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:5, label:"Sharpener: Short Intervals", zone:"Z5", detail:"WU · 4×3min Z5 (174–180 bpm) w/ 3min jog · CD. Short and crisp — priming for Sunday."},
+      {day:"Tue",type:"quality",miles:5, label:"Sharpener: Short Intervals", zone:"Z5", detail:"WU · 4×3min Z5 (182–189 bpm) w/ 3min jog · CD. Short and crisp — priming for Sunday."},
       {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 easy."},
       {day:"Thu",type:"easy",miles:3, label:"Easy 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides to Z5+."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi", zone:"Z1", detail:"Very easy. Under 128."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-21:30. First Block 2 TT. HR goal: reach Z5 (172+) within first 400m → Z5 through miles 1–2 → Z5+ (180–186) for mile 3. No mile gap over 30 seconds."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-21:30. First Block 2 TT. HR goal: reach Z5 (172+) within first 400m → Z5 through miles 1–2 → Z5+ (189–195) for mile 3. No mile gap over 30 seconds."},
     ],
     notes:"VO2max work should show as the ability to sustain Z5 (172–180) longer before backing off. If HR stabilises at 176 in mile 2 where it used to spike to 180, that's your ceiling rising.",
   },
@@ -284,9 +286,9 @@ const weeks = [
     week:21, dates:"Aug 31–Sep 6", block:2, miles:32, phase:"Race Specific", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · TT recovery."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×4min Z5 (174–180 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×4min Z5 (182–189 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Thu",type:"quality",miles:6, label:"Mixed Z4 + Z5+ Race Reps", zone:"Z5p", detail:"WU · 15min Z4 (162–170) · 3min jog · 3×800m at Z5+ (180–186 bpm) w/ 90s jog · CD. Each 800m rep: ~3:10–3:20 sustained at race HR."},
+      {day:"Thu",type:"quality",miles:6, label:"Mixed Z4 + Z5+ Race Reps", zone:"Z5p", detail:"WU · 15min Z4 (169–178) · 3min jog · 3×800m at Z5+ (189–195 bpm) w/ 90s jog · CD. Each 800m rep: ~3:10–3:20 sustained at race HR."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 easy."},
@@ -297,9 +299,9 @@ const weeks = [
     week:22, dates:"Sep 7–13", block:2, miles:34, phase:"Race Specific", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min Z5 (174–181 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min Z5 (182–190 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 strict."},
-      {day:"Thu",type:"quality",miles:6, label:"Kilometer Race-Zone Reps", zone:"Z5p", detail:"WU · 5×1km at Z5+ (180–186 bpm) w/ 90s jog · CD. Target: HR steady at 181–184 per rep. Rep 1 spike to 186 = started too hard. Rep 5 drift to 176 = still Z5, still fine."},
+      {day:"Thu",type:"quality",miles:6, label:"Kilometer Race-Zone Reps", zone:"Z5p", detail:"WU · 5×1km at Z5+ (189–195 bpm) w/ 90s jog · CD. Target: HR steady at 190–193 per rep. Rep 1 spike to 195 = started too hard. Rep 5 drift to 184 = still Z5, still fine."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 long."},
@@ -310,9 +312,9 @@ const weeks = [
     week:23, dates:"Sep 14–20", block:2, miles:35, phase:"Race Specific", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:8, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×5min Z5 (175–181 bpm) w/ 3min jog · CD. Peak VO2max volume of the plan."},
+      {day:"Tue",type:"quality",miles:8, label:"VO2max Intervals", zone:"Z5", detail:"WU · 6×5min Z5 (183–190 bpm) w/ 3min jog · CD. Peak VO2max volume of the plan."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 strict."},
-      {day:"Thu",type:"quality",miles:6, label:"Race Reps + Surges", zone:"Z5p", detail:"WU · 4×1km at Z5+ (180–185 bpm) w/ 90s jog · 2×200m at absolute max (Z5+ ceiling, 184–186 bpm) · CD. The 200m surges train fast-twitch to fire at max HR — essential for the final 400m of a 5k."},
+      {day:"Thu",type:"quality",miles:6, label:"Race Reps + Surges", zone:"Z5p", detail:"WU · 4×1km at Z5+ (189–194 bpm) w/ 90s jog · 2×200m at absolute max (Z5+ ceiling, 193–195 bpm) · CD. The 200m surges train fast-twitch to fire at max HR — essential for the final 400m of a 5k."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:8, label:"Long Run 8mi", zone:"Z2", detail:"Z2 long."},
@@ -323,12 +325,12 @@ const weeks = [
     week:24, dates:"Sep 21–27", block:2, miles:27, phase:"Race Specific", target5k:"20:45",
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy. TT taper."},
-      {day:"Tue",type:"quality",miles:5, label:"Sharpener", zone:"Z5", detail:"WU · 4×4min Z5 (174–180 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:5, label:"Sharpener", zone:"Z5", detail:"WU · 4×4min Z5 (182–189 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 easy."},
       {day:"Thu",type:"easy",miles:3, label:"Easy 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides to Z5+."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:3, label:"Shakeout 3mi", zone:"Z1", detail:"Very easy."},
-      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-20:45. Two months out from goal. HR blueprint: 400m build to Z4/Z5 boundary (168–172) → Mile 1 avg Z5 (174–177) → Mile 2 Z5 upper (177–180) → Mile 3 Z5+ (180–186). Clearest predictor of November."},
+      {day:"Sun",type:"tt",miles:5, label:"🏁 TIME TRIAL", zone:"Z5p", detail:"Target sub-20:45. Two months out from goal. HR blueprint: 400m build to Z4/Z5 boundary (176–180) → Mile 1 avg Z5 (182–185) → Mile 2 Z5 upper (185–189) → Mile 3 Z5+ (189–195). Clearest predictor of November."},
     ],
     notes:"Sub-20:45 = sub-20 in November very much alive. Sub-21:15 = possible with perfect execution. Above 21:30 = reset goal to sub-21. Be honest with the data.",
   },
@@ -336,9 +338,9 @@ const weeks = [
     week:25, dates:"Sep 28–Oct 4", block:2, miles:33, phase:"Sharpening", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 · TT recovery."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min Z5 (175–181 bpm) w/ 3min jog · CD. Fastest Z5 feel yet."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×5min Z5 (183–190 bpm) w/ 3min jog · CD. Fastest Z5 feel yet."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Thu",type:"quality",miles:7, label:"Race Zone Reps", zone:"Z5p", detail:"WU · 6×1km at Z5+ (181–186 bpm) w/ 90s jog · CD. Six reps — the peak race-specific volume session of the plan."},
+      {day:"Thu",type:"quality",miles:7, label:"Race Zone Reps", zone:"Z5p", detail:"WU · 6×1km at Z5+ (190–195 bpm) w/ 90s jog · CD. Six reps — the peak race-specific volume session of the plan."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 easy."},
@@ -349,9 +351,9 @@ const weeks = [
     week:26, dates:"Oct 5–11", block:2, miles:34, phase:"Sharpening", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 4×6min Z5 (175–181 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:7, label:"VO2max Intervals", zone:"Z5", detail:"WU · 4×6min Z5 (183–190 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:6, label:"Easy 6mi", zone:"Z1", detail:"Z1 strict."},
-      {day:"Thu",type:"quality",miles:6, label:"Race Simulation", zone:"Z5p", detail:"WU · 2mi continuous at Z5+ (180–185 bpm) · CD. The gut-check workout. Two miles at race HR — if it holds together, you're ready. If it falls apart at 1.5mi, add one more sharpening week."},
+      {day:"Thu",type:"quality",miles:6, label:"Race Simulation", zone:"Z5p", detail:"WU · 2mi continuous at Z5+ (189–194 bpm) · CD. The gut-check workout. Two miles at race HR — if it holds together, you're ready. If it falls apart at 1.5mi, add one more sharpening week."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:6, label:"Easy 6mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 easy."},
@@ -362,9 +364,9 @@ const weeks = [
     week:27, dates:"Oct 12–18", block:2, miles:33, phase:"Sharpening", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:6, label:"Easy 6mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:6, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×4min Z5 (175–181 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:6, label:"VO2max Intervals", zone:"Z5", detail:"WU · 5×4min Z5 (183–190 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z1", detail:"Z1 easy. Volume dipping."},
-      {day:"Thu",type:"quality",miles:6, label:"Short Race Zone Reps", zone:"Z5p", detail:"WU · 4×1km at Z5+ (182–186 bpm) w/ 90s jog · CD. Shorter than Week 25 — intensity up, volume down."},
+      {day:"Thu",type:"quality",miles:6, label:"Short Race Zone Reps", zone:"Z5p", detail:"WU · 4×1km at Z5+ (191–195 bpm) w/ 90s jog · CD. Shorter than Week 25 — intensity up, volume down."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:5, label:"Easy 5mi + Strides", zone:"Z2", detail:"Z2 + 6×20s strides."},
       {day:"Sun",type:"long",miles:7, label:"Long Run 7mi", zone:"Z2", detail:"Z2 easy."},
@@ -375,7 +377,7 @@ const weeks = [
     week:28, dates:"Oct 19–25", block:2, miles:26, phase:"Sharpening", target5k:"20:15",
     sessions:[
       {day:"Mon",type:"easy",miles:4, label:"Easy 4mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:5, label:"Sharpener", zone:"Z5", detail:"WU · 3×5min Z5 (175–181 bpm) w/ 3min jog · CD."},
+      {day:"Tue",type:"quality",miles:5, label:"Sharpener", zone:"Z5", detail:"WU · 3×5min Z5 (183–190 bpm) w/ 3min jog · CD."},
       {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z1", detail:"Z1 easy."},
       {day:"Thu",type:"easy",miles:3, label:"Easy 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides to Z5+."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
@@ -388,9 +390,9 @@ const weeks = [
     week:29, dates:"Oct 26–Nov 1", block:2, miles:28, phase:"Taper", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy recovery."},
-      {day:"Tue",type:"quality",miles:5, label:"Interval Sharpener", zone:"Z5", detail:"WU · 4×3min Z5 (174–180 bpm) w/ 3min jog · CD. Keep the pop."},
+      {day:"Tue",type:"quality",miles:5, label:"Interval Sharpener", zone:"Z5", detail:"WU · 4×3min Z5 (182–189 bpm) w/ 3min jog · CD. Keep the pop."},
       {day:"Wed",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Thu",type:"quality",miles:5, label:"Race Zone Reps", zone:"Z5p", detail:"WU · 3×1km at Z5+ (180–185 bpm) w/ 90s jog · CD. Just reminding the legs what race HR feels like."},
+      {day:"Thu",type:"quality",miles:5, label:"Race Zone Reps", zone:"Z5p", detail:"WU · 3×1km at Z5+ (189–194 bpm) w/ 90s jog · CD. Just reminding the legs what race HR feels like."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
       {day:"Sat",type:"easy",miles:4, label:"Easy 4mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides."},
       {day:"Sun",type:"easy",miles:5, label:"Easy 5mi", zone:"Z2", detail:"Spin the legs. Z2 only."},
@@ -401,7 +403,7 @@ const weeks = [
     week:30, dates:"Nov 2–8", block:2, miles:22, phase:"Taper", target5k:null,
     sessions:[
       {day:"Mon",type:"easy",miles:4, label:"Easy 4mi", zone:"Z2", detail:"Z2 easy."},
-      {day:"Tue",type:"quality",miles:4, label:"Final Interval Session", zone:"Z5", detail:"WU · 3×3min Z5 (174–180 bpm) w/ 3min jog · CD. Last hard session of the entire cycle."},
+      {day:"Tue",type:"quality",miles:4, label:"Final Interval Session", zone:"Z5", detail:"WU · 3×3min Z5 (182–189 bpm) w/ 3min jog · CD. Last hard session of the entire cycle."},
       {day:"Wed",type:"easy",miles:4, label:"Easy 4mi", zone:"Z2", detail:"Z2 easy."},
       {day:"Thu",type:"easy",miles:3, label:"Easy 3mi + Strides", zone:"Z2", detail:"Z2 + 4×20s strides to Z5+."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off."},
@@ -432,7 +434,7 @@ const weeks = [
       {day:"Thu",type:"easy",miles:2, label:"Easy 2mi + 2 Strides", zone:"Z2", detail:"Two strides at Z5+. Confirm legs are firing at race HR."},
       {day:"Fri",type:"rest",miles:0, label:"Full Rest", zone:null, detail:"Off. Pack gear. Sleep early."},
       {day:"Sat",type:"rest",miles:0, label:"Rest", zone:null, detail:"Off. Light walk only. Race tomorrow."},
-      {day:"Sun",type:"tt",miles:5, label:"🎯 GOAL RACE — SUB-20", zone:"Z5p", detail:"WU: 1.5mi easy Z2 → 4 strides to Z5+. Race HR strategy: first 400m build to Z4/Z5 boundary (170–172) → Mile 1 avg Z5 low (173–176) → Mile 2 avg Z5 mid (176–180) → Mile 3 everything: Z5+ (180–186). Empty the tank."},
+      {day:"Sun",type:"tt",miles:5, label:"🎯 GOAL RACE — SUB-20", zone:"Z5p", detail:"WU: 1.5mi easy Z2 → 4 strides to Z5+. Race HR strategy: first 400m build to Z4/Z5 boundary (178–180) → Mile 1 avg Z5 low (181–184) → Mile 2 avg Z5 mid (184–189) → Mile 3 everything: Z5+ (189–195). Empty the tank."},
     ],
     notes:"Race day. 32 weeks of work. Trust it. One tactical note: if you feel amazing at mile 1, don't accelerate. Bank time with even effort, not a sprint. Mile 3 is where the race is won.",
   },
@@ -460,9 +462,8 @@ const phaseColors = {
 };
 
 const targetProgression = [
-  {label:"Now",  time:"24:44",sec:1484},
-  {label:"Apr",  time:"24:30",sec:1470},
-  {label:"May",  time:"23:45",sec:1425},
+  {label:"Now",  time:"24:44",sec:1484,actual:true},
+  {label:"May",  time:"23:42",sec:1422,actual:true},
   {label:"Jun",  time:"23:00",sec:1380},
   {label:"Jul",  time:"22:30",sec:1350},
   {label:"Aug",  time:"21:30",sec:1290},
@@ -521,21 +522,25 @@ export default function TrainingPlan() {
 
           {/* Progression bars */}
           <div style={{marginTop:"1.25rem"}}>
-            <div style={{color:"#475569",fontSize:"0.61rem",fontFamily:"monospace",letterSpacing:"0.12em",marginBottom:"0.4rem"}}>TIME TRIAL TARGETS</div>
+            <div style={{color:"#475569",fontSize:"0.61rem",fontFamily:"monospace",letterSpacing:"0.12em",marginBottom:"0.4rem"}}>TIME TRIAL PROGRESSION</div>
             <div style={{display:"flex",alignItems:"flex-end",gap:"0.25rem",flexWrap:"wrap"}}>
               {targetProgression.map((t,i)=>{
+                const isGoal=i===targetProgression.length-1;
                 const pct=(maxSec-t.sec)/range;
                 const h=16+pct*44;
                 const col=`hsl(${220-pct*180},80%,${65-pct*20}%)`;
                 return (
                   <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"0.25rem"}}>
-                    <div style={{fontSize:"0.54rem",color:col,fontFamily:"monospace",whiteSpace:"nowrap",fontWeight:i===8?700:400}}>{t.time}</div>
-                    <div style={{width:26,height:h,background:col,borderRadius:"3px 3px 0 0"}}/>
-                    <div style={{fontSize:"0.49rem",color:"#64748b",fontFamily:"monospace",transform:"rotate(-30deg) translateX(-2px)",whiteSpace:"nowrap",transformOrigin:"top center",marginTop:3,fontWeight:i===8?700:400}}>{t.label}</div>
+                    <div style={{fontSize:"0.54rem",color:col,fontFamily:"monospace",whiteSpace:"nowrap",fontWeight:isGoal||t.actual?700:400}}>
+                      {t.actual&&"✓ "}{t.time}
+                    </div>
+                    <div style={{width:26,height:h,background:t.actual?col:"transparent",border:`2px solid ${col}`,borderRadius:"3px 3px 0 0",boxSizing:"border-box"}}/>
+                    <div style={{fontSize:"0.49rem",color:"#64748b",fontFamily:"monospace",transform:"rotate(-30deg) translateX(-2px)",whiteSpace:"nowrap",transformOrigin:"top center",marginTop:3,fontWeight:isGoal||t.actual?700:400}}>{t.label}</div>
                   </div>
                 );
               })}
             </div>
+            <div style={{fontSize:"0.55rem",color:"#94a3b8",fontFamily:"monospace",marginTop:"0.5rem"}}>Filled = achieved · Outlined = target</div>
           </div>
         </div>
       </div>

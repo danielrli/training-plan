@@ -494,7 +494,201 @@ function getCurrentWeek() {
   return Math.min(Math.max(elapsed + 1, 1), weeks.length);
 }
 
+
+function WeeklyReview() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+  const [expandedWeek, setExpandedWeek] = useState(0);
+
+  useEffect(() => {
+    fetch("./review.json")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => setData(d))
+      .catch(() => setError(true));
+  }, []);
+
+  if (error) return (
+    <div style={{maxWidth:820,margin:"3rem auto",padding:"2rem 1rem",textAlign:"center"}}>
+      <div style={{color:"#374151",fontFamily:"monospace",fontSize:"0.88rem",marginBottom:"0.5rem"}}>
+        No review data available.
+      </div>
+      <div style={{color:"#64748b",fontSize:"0.74rem"}}>
+        Run <code style={{background:"#f1f5f9",padding:"0.1rem 0.4rem",borderRadius:3}}>
+          python weekly_review.py
+        </code> on the homeserver to generate it.
+      </div>
+    </div>
+  );
+
+  if (!data) return (
+    <div style={{textAlign:"center",padding:"3rem",color:"#94a3b8",fontFamily:"monospace",fontSize:"0.75rem"}}>
+      Loading…
+    </div>
+  );
+
+  const ZONE_ORDER = ["Z1","Z2","Z3","Z4","Z5","Z5p"];
+  const ZCOL = {Z1:"#94a3b8",Z2:"#10b981",Z3:"#3b82f6",Z4:"#d97706",Z5:"#ea580c",Z5p:"#e11d48"};
+  const summary = data.summary_4wk;
+  const maxZ = Math.max(...ZONE_ORDER.map(z => summary.zones[z]||0), 1);
+
+  return (
+    <div style={{maxWidth:820,margin:"0 auto",padding:"1.25rem 1rem"}}>
+
+      {/* Meta row */}
+      <div style={{display:"flex",gap:"1.5rem",flexWrap:"wrap",marginBottom:"1rem",
+        background:"white",border:"1.5px solid #e2e8f0",borderRadius:8,padding:"0.85rem 1rem"}}>
+        <div>
+          <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>GENERATED</div>
+          <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#0f172a",fontWeight:700}}>{data.generated}</div>
+        </div>
+        <div>
+          <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>PLAN WEEK</div>
+          <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#0f172a",fontWeight:700}}>{data.plan_week} / 32</div>
+        </div>
+        <div>
+          <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>4-WEEK SPLIT</div>
+          <div style={{fontFamily:"monospace",fontSize:"0.78rem"}}>
+            <span style={{color:"#10b981"}}>Easy {summary.easy_pct}%</span>
+            <span style={{color:"#94a3b8"}}> · </span>
+            <span style={{color:"#3b82f6"}}>Gray {summary.gray_pct}%</span>
+            <span style={{color:"#94a3b8"}}> · </span>
+            <span style={{color:"#ea580c"}}>Quality {summary.quality_pct}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Zone distribution bars */}
+      <div style={{background:"white",border:"1.5px solid #e2e8f0",borderRadius:8,
+        padding:"0.85rem 1rem",marginBottom:"1rem"}}>
+        <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#64748b",
+          letterSpacing:"0.12em",marginBottom:"0.6rem"}}>
+          4-WEEK ZONE DISTRIBUTION · BY AVG HR PER RUN
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>
+          {ZONE_ORDER.map(z => {
+            const n = summary.zones[z]||0;
+            const col = ZCOL[z];
+            const lbl = z==="Z5p" ? "Z5+" : z;
+            return (
+              <div key={z} style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                <div style={{width:28,fontFamily:"monospace",fontSize:"0.62rem",
+                  color:col,fontWeight:700,flexShrink:0}}>{lbl}</div>
+                <div style={{flex:1,background:"#f1f5f9",borderRadius:3,height:14,overflow:"hidden"}}>
+                  <div style={{width:`${(n/maxZ)*100}%`,height:"100%",background:col,
+                    borderRadius:3,minWidth:n>0?4:0}}/>
+                </div>
+                <div style={{width:22,fontFamily:"monospace",fontSize:"0.62rem",
+                  color:"#64748b",textAlign:"right",flexShrink:0}}>{n}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{marginTop:"0.6rem",fontSize:"0.59rem",color:"#94a3b8",fontFamily:"monospace"}}>
+          Target: ~80% Z1+Z2 · &lt;10% Z3 · ~20% Z4+
+        </div>
+      </div>
+
+      {/* Week cards */}
+      <div style={{display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+        {data.weeks.map((w,wi) => {
+          const isOpen = expandedWeek===wi;
+          return (
+            <div key={w.week_start} style={{
+              border:w.is_current?"2px solid #0ea5e9":"1.5px solid #e2e8f0",
+              borderRadius:8,background:w.is_current?"#f0f9ff":"white",overflow:"hidden",
+              boxShadow:isOpen?"0 4px 16px rgba(0,0,0,0.08)":"0 1px 2px rgba(0,0,0,0.04)",
+            }}>
+              <button onClick={()=>setExpandedWeek(isOpen?null:wi)}
+                style={{width:"100%",background:"none",border:"none",cursor:"pointer",
+                  textAlign:"left",padding:"0.75rem 1rem"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flexWrap:"wrap"}}>
+                  <div style={{minWidth:34,height:34,borderRadius:"50%",flexShrink:0,
+                    background:"#0f172a",color:"white",display:"flex",alignItems:"center",
+                    justifyContent:"center",fontSize:"0.65rem",fontFamily:"monospace",fontWeight:700}}>
+                    W{w.plan_week}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"0.4rem",flexWrap:"wrap"}}>
+                      <span style={{fontSize:"0.82rem",fontWeight:600,color:"#0f172a",
+                        fontFamily:"monospace"}}>{w.week_start} – {w.week_end}</span>
+                      {w.is_current&&<span style={{fontSize:"0.61rem",background:"#0ea5e9",
+                        color:"white",padding:"0.1rem 0.45rem",borderRadius:3,
+                        fontFamily:"monospace",fontWeight:700}}>NOW</span>}
+                      <span style={{fontSize:"0.61rem",color:"#64748b",fontFamily:"monospace"}}>
+                        {w.run_count} runs · {w.quality_count} quality · long {w.long_run_miles}mi
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexShrink:0}}>
+                    <span style={{fontFamily:"monospace",fontSize:"0.82rem",
+                      color:"#374151",fontWeight:700}}>
+                      {w.total_miles}
+                      <span style={{color:"#94a3b8",fontSize:"0.65rem",fontWeight:400}}> mi</span>
+                    </span>
+                    <div style={{display:"flex",gap:3}}>
+                      {w.sessions.map((s,i)=>(
+                        <div key={i} style={{width:7,height:7,borderRadius:"50%",
+                          background:ZCOL[s.zone==="Z5+"?"Z5p":s.zone]||"#cbd5e1"}}/>
+                      ))}
+                    </div>
+                    <span style={{color:"#94a3b8",fontSize:"0.9rem"}}>{isOpen?"▴":"▾"}</span>
+                  </div>
+                </div>
+              </button>
+
+              {isOpen&&(
+                <div style={{borderTop:"1px solid #f1f5f9",padding:"0.85rem 1rem"}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:"0.3rem"}}>
+                    {w.sessions.map((s,si)=>{
+                      const zKey = s.zone==="Z5+" ? "Z5p" : s.zone;
+                      const zInfo = ZONES[zKey];
+                      return (
+                        <div key={si} style={{
+                          display:"flex",gap:"0.6rem",alignItems:"flex-start",
+                          background:zInfo?zInfo.bg:"#f8fafc",
+                          border:`1px solid ${zInfo?zInfo.border:"#e2e8f0"}`,
+                          borderRadius:6,padding:"0.5rem 0.6rem",
+                        }}>
+                          <div style={{width:30,flexShrink:0,fontFamily:"monospace",
+                            fontSize:"0.62rem",fontWeight:700,color:"#94a3b8",paddingTop:2}}>
+                            {s.weekday}
+                          </div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",alignItems:"center",gap:"0.4rem",
+                              flexWrap:"wrap",marginBottom:"0.15rem"}}>
+                              <span style={{fontSize:"0.78rem",fontWeight:600,
+                                color:zInfo?zInfo.color:"#374151"}}>{s.name||"Run"}</span>
+                              <span style={{fontSize:"0.61rem",fontFamily:"monospace",
+                                color:"#64748b",background:"#f1f5f9",
+                                padding:"0.1rem 0.4rem",borderRadius:3}}>{s.miles}mi</span>
+                              <ZonePill zone={zKey}/>
+                            </div>
+                            <div style={{fontSize:"0.68rem",color:"#64748b",fontFamily:"monospace"}}>
+                              {s.time} · {s.pace}/mi
+                              {s.avg_hr ? ` · HR ${s.avg_hr} avg / ${s.max_hr} max` : ""}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{textAlign:"center",color:"#94a3b8",fontSize:"0.61rem",fontFamily:"monospace",
+        marginTop:"1rem",letterSpacing:"0.1em"}}>
+        RUN weekly_review.py TO REFRESH · PASTE OUTPUT INTO CLAUDE CODE FOR NEXT WEEK'S PLAN
+      </div>
+    </div>
+  );
+}
+
 export default function TrainingPlan() {
+  const [view, setView] = useState("plan");
   const [activeBlock, setActiveBlock] = useState("all");
   const [expandedWeek, setExpandedWeek] = useState(getCurrentWeek);
   const currentWeek = getCurrentWeek();
@@ -518,7 +712,7 @@ export default function TrainingPlan() {
             Sub-20 Minute 5K
           </h1>
           <div style={{color:"#94a3b8",fontSize:"0.78rem",marginTop:"0.3rem",fontFamily:"monospace"}}>
-            Max HR 186 bpm · Rest HR 63 bpm · Karvonen Zones · Norwegian Singles
+            Max HR 195 bpm · Rest HR 63 bpm · Karvonen Zones · Norwegian Singles
           </div>
 
           {/* Zone chips */}
@@ -556,9 +750,22 @@ export default function TrainingPlan() {
             </div>
             <div style={{fontSize:"0.55rem",color:"#94a3b8",fontFamily:"monospace",marginTop:"0.5rem"}}>Filled = achieved · Outlined = target</div>
           </div>
+
+          {/* View tabs */}
+          <div style={{display:"flex",marginTop:"1rem",borderTop:"1px solid #1e293b",paddingTop:"0.5rem",marginBottom:"-0.5rem"}}>
+            {[["plan","Training Plan"],["review","Weekly Review"]].map(([val,label])=>(
+              <button key={val} onClick={()=>setView(val)} style={{
+                padding:"0.4rem 1.1rem",background:"none",border:"none",cursor:"pointer",
+                fontFamily:"monospace",fontSize:"0.71rem",letterSpacing:"0.04em",
+                color:view===val?"#f8fafc":"#475569",
+                borderBottom:view===val?"2px solid #f43f5e":"2px solid transparent",
+              }}>{label}</button>
+            ))}
+          </div>
         </div>
       </div>
 
+      {view==="review" ? <WeeklyReview/> : (
       <div style={{maxWidth:820,margin:"0 auto",padding:"1.25rem 1rem"}}>
         {/* Block filter */}
         <div style={{display:"flex",gap:"0.4rem",marginBottom:"1rem",flexWrap:"wrap"}}>
@@ -677,7 +884,7 @@ export default function TrainingPlan() {
 
         {/* HR Zone reference card */}
         <div style={{marginTop:"1.25rem",padding:"1rem",background:"#0f172a",borderRadius:8}}>
-          <div style={{fontSize:"0.61rem",fontFamily:"monospace",color:"#475569",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>HEART RATE ZONES · MAX HR 186 · RESTING HR 63 · KARVONEN METHOD</div>
+          <div style={{fontSize:"0.61rem",fontFamily:"monospace",color:"#475569",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>HEART RATE ZONES · MAX HR 195 · RESTING HR 63 · KARVONEN METHOD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(128px,1fr))",gap:"0.5rem"}}>
             {Object.entries(ZONES).map(([k,z])=>(
               <div key={k} style={{background:z.bg,border:`1px solid ${z.border}`,borderRadius:6,padding:"0.5rem 0.6rem"}}>
@@ -693,6 +900,7 @@ export default function TrainingPlan() {
           CLICK ANY WEEK TO EXPAND · THE ZONE IS THE TARGET, NOT THE CLOCK · SLEEP IS TRAINING
         </div>
       </div>
+      )}
     </div>
   );
 }

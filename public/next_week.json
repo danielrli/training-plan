@@ -1,0 +1,68 @@
+{
+  "generated": "2026-06-04",
+  "week": 9,
+  "dates": "Jun 8–14",
+  "plan_week": 9,
+  "phase": "Build",
+  "total_miles": 35,
+  "context": "Last full week before the Jun 15–28 break. The threshold session missed in week 8 carries forward to Tuesday. Make Tue and Thu count — these are the stimulus sessions that consolidate during rest. Easy days must stay Z2 (129–149 bpm); your 4-week Z3 rate is 22%, which is dragging recovery.",
+  "sessions": [
+    {
+      "day": "Mon",
+      "type": "easy",
+      "miles": 6,
+      "label": "Easy 6mi",
+      "zone": "Z2",
+      "detail": "Z2 · 129–149 bpm. If HR drifts above 150, walk until it drops back. Your recent easy runs are averaging Z3 — today sets the tone for the week."
+    },
+    {
+      "day": "Tue",
+      "type": "quality",
+      "miles": 8,
+      "label": "Threshold Tempo 38min",
+      "zone": "Z4",
+      "detail": "WU 10min to Z2 · 38min continuous Z4 (162–178 bpm) · CD to Z2. Carried forward from week 8. Start at 162–165, let HR climb naturally to 175–178 by the final 10min. Don’t spike — drift is fine."
+    },
+    {
+      "day": "Wed",
+      "type": "easy",
+      "miles": 5,
+      "label": "Easy 5mi",
+      "zone": "Z1",
+      "detail": "Z1 · under 135 bpm. True recovery after Tuesday’s tempo. Go slower than feels right. If you ran the tempo hard, this should feel embarrassingly easy."
+    },
+    {
+      "day": "Thu",
+      "type": "quality",
+      "miles": 6,
+      "label": "Easy 5mi + Strides + 4×200m",
+      "zone": "Z5p",
+      "detail": "5mi Z2 · 4×20s strides (brief Z5+ spikes, that’s fine) · 4×200m at Z5+ (189–195 bpm) w/ 2min walk recovery. Each 200m should take ~50–60s. HR won’t fully stabilise — these are neuromuscular, not aerobic. Focus on turnover, not time."
+    },
+    {
+      "day": "Fri",
+      "type": "rest",
+      "miles": 0,
+      "label": "Full Rest",
+      "zone": null,
+      "detail": "Off. Two hard sessions this week — the rest is part of the training."
+    },
+    {
+      "day": "Sat",
+      "type": "easy",
+      "miles": 6,
+      "label": "Easy 6mi",
+      "zone": "Z2",
+      "detail": "Z2 · 129–149 bpm. Legs should feel decent after the rest day. Keep it honest — no tempo creep."
+    },
+    {
+      "day": "Sun",
+      "type": "long",
+      "miles": 9,
+      "label": "Long Run 9mi",
+      "zone": "Z2",
+      "detail": "Z2 · 135–151 bpm. Last long run before the break. Comfortable conversational effort throughout. Slight HR drift in the final 2mi is acceptable. Finish strong but not spent."
+    }
+  ],
+  "notes": "This is the final training week before two weeks off. The break is planned and earned — don’t skip sessions to ‘pre-rest’ and don’t add mileage to ‘bank’ fitness. Hit Tuesday and Thursday, run the easy days easy, finish the long run Sunday. The rest period will consolidate everything."
+}

@@ -1,0 +1,292 @@
+{
+  "generated": "2026-06-04",
+  "plan_week": 8,
+  "max_hr": 195,
+  "rhr": 63,
+  "weeks": [
+    {
+      "week_start": "2026-06-01",
+      "week_end": "2026-06-07",
+      "plan_week": 8,
+      "is_current": true,
+      "total_miles": 12.2,
+      "total_time": "2:14:09",
+      "run_count": 2,
+      "quality_count": 0,
+      "easy_count": 1,
+      "long_run_miles": 6.2,
+      "zones": {
+        "Z3": 1,
+        "Z2": 1
+      },
+      "sessions": [
+        {
+          "date": "2026-06-03",
+          "weekday": "Wed",
+          "name": "Irvine - NSM mediums",
+          "miles": 6.07,
+          "time": "1:03:09",
+          "avg_hr": 152,
+          "max_hr": 171,
+          "pace": "10:24",
+          "zone": "Z3"
+        },
+        {
+          "date": "2026-06-04",
+          "weekday": "Thu",
+          "name": "Irvine Running",
+          "miles": 6.18,
+          "time": "1:11:00",
+          "avg_hr": 137,
+          "max_hr": 157,
+          "pace": "11:28",
+          "zone": "Z2"
+        }
+      ]
+    },
+    {
+      "week_start": "2026-05-25",
+      "week_end": "2026-05-31",
+      "plan_week": 7,
+      "is_current": false,
+      "total_miles": 27.2,
+      "total_time": "4:47:36",
+      "run_count": 7,
+      "quality_count": 1,
+      "easy_count": 5,
+      "long_run_miles": 6.2,
+      "zones": {
+        "Z2": 5,
+        "Z3": 1,
+        "Z5": 1
+      },
+      "sessions": [
+        {
+          "date": "2026-05-25",
+          "weekday": "Mon",
+          "name": "Irvine Running",
+          "miles": 6.18,
+          "time": "1:04:43",
+          "avg_hr": 146,
+          "max_hr": 161,
+          "pace": "10:28",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-26",
+          "weekday": "Tue",
+          "name": "Irvine Running",
+          "miles": 4.68,
+          "time": "56:45",
+          "avg_hr": 134,
+          "max_hr": 153,
+          "pace": "12:06",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-27",
+          "weekday": "Wed",
+          "name": "Irvine Running",
+          "miles": 5.01,
+          "time": "50:51",
+          "avg_hr": 142,
+          "max_hr": 178,
+          "pace": "10:09",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-29",
+          "weekday": "Fri",
+          "name": "Irvine Running",
+          "miles": 4.01,
+          "time": "47:41",
+          "avg_hr": 135,
+          "max_hr": 149,
+          "pace": "11:54",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-30",
+          "weekday": "Sat",
+          "name": "Irvine Running",
+          "miles": 3.21,
+          "time": "32:21",
+          "avg_hr": 149,
+          "max_hr": 173,
+          "pace": "10:05",
+          "zone": "Z3"
+        },
+        {
+          "date": "2026-05-31",
+          "weekday": "Sun",
+          "name": "Irvine Running",
+          "miles": 1.0,
+          "time": "11:30",
+          "avg_hr": 138,
+          "max_hr": 165,
+          "pace": "11:31",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-31",
+          "weekday": "Sun",
+          "name": "Irvine Running",
+          "miles": 3.12,
+          "time": "23:42",
+          "avg_hr": 179,
+          "max_hr": 195,
+          "pace": "7:35",
+          "zone": "Z5"
+        }
+      ]
+    },
+    {
+      "week_start": "2026-05-18",
+      "week_end": "2026-05-24",
+      "plan_week": 6,
+      "is_current": false,
+      "total_miles": 27.0,
+      "total_time": "5:01:26",
+      "run_count": 5,
+      "quality_count": 1,
+      "easy_count": 3,
+      "long_run_miles": 9.0,
+      "zones": {
+        "Z2": 3,
+        "Z3": 1,
+        "Z4": 1
+      },
+      "sessions": [
+        {
+          "date": "2026-05-18",
+          "weekday": "Mon",
+          "name": "Irvine Running",
+          "miles": 6.01,
+          "time": "1:08:16",
+          "avg_hr": 139,
+          "max_hr": 160,
+          "pace": "11:22",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-19",
+          "weekday": "Tue",
+          "name": "Irvine Running",
+          "miles": 9.0,
+          "time": "1:47:08",
+          "avg_hr": 142,
+          "max_hr": 163,
+          "pace": "11:53",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-20",
+          "weekday": "Wed",
+          "name": "Irvine Running",
+          "miles": 1.76,
+          "time": "19:30",
+          "avg_hr": 148,
+          "max_hr": 161,
+          "pace": "11:06",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-21",
+          "weekday": "Thu",
+          "name": "Irvine Running",
+          "miles": 6.2,
+          "time": "1:08:30",
+          "avg_hr": 150,
+          "max_hr": 167,
+          "pace": "11:02",
+          "zone": "Z3"
+        },
+        {
+          "date": "2026-05-22",
+          "weekday": "Fri",
+          "name": "Irvine Running",
+          "miles": 4.0,
+          "time": "37:59",
+          "avg_hr": 165,
+          "max_hr": 185,
+          "pace": "9:29",
+          "zone": "Z4"
+        }
+      ]
+    },
+    {
+      "week_start": "2026-05-11",
+      "week_end": "2026-05-17",
+      "plan_week": 5,
+      "is_current": false,
+      "total_miles": 21.7,
+      "total_time": "4:04:26",
+      "run_count": 4,
+      "quality_count": 0,
+      "easy_count": 3,
+      "long_run_miles": 6.5,
+      "zones": {
+        "Z2": 3,
+        "Z3": 1
+      },
+      "sessions": [
+        {
+          "date": "2026-05-12",
+          "weekday": "Tue",
+          "name": "Irvine Running",
+          "miles": 6.51,
+          "time": "1:13:07",
+          "avg_hr": 141,
+          "max_hr": 167,
+          "pace": "11:13",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-13",
+          "weekday": "Wed",
+          "name": "Irvine Running",
+          "miles": 4.04,
+          "time": "45:47",
+          "avg_hr": 142,
+          "max_hr": 167,
+          "pace": "11:20",
+          "zone": "Z2"
+        },
+        {
+          "date": "2026-05-15",
+          "weekday": "Fri",
+          "name": "Irvine Running",
+          "miles": 5.01,
+          "time": "54:51",
+          "avg_hr": 153,
+          "max_hr": 169,
+          "pace": "10:57",
+          "zone": "Z3"
+        },
+        {
+          "date": "2026-05-16",
+          "weekday": "Sat",
+          "name": "Irvine Running",
+          "miles": 6.11,
+          "time": "1:10:39",
+          "avg_hr": 140,
+          "max_hr": 161,
+          "pace": "11:33",
+          "zone": "Z2"
+        }
+      ]
+    }
+  ],
+  "summary_4wk": {
+    "total_runs": 18,
+    "zones": {
+      "Z3": 4,
+      "Z2": 12,
+      "Z5": 1,
+      "Z4": 1
+    },
+    "easy_pct": 67,
+    "gray_pct": 22,
+    "quality_pct": 11
+  }
+}

@@ -687,6 +687,143 @@ function WeeklyReview() {
   );
 }
 
+
+function NextWeek() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(null);
+
+  useEffect(() => {
+    fetch("./next_week.json")
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => { setData(d); setExpanded(null); })
+      .catch(() => setError(true));
+  }, []);
+
+  if (error) return (
+    <div style={{maxWidth:820,margin:"3rem auto",padding:"2rem 1rem",textAlign:"center"}}>
+      <div style={{color:"#374151",fontFamily:"monospace",fontSize:"0.88rem",marginBottom:"0.5rem"}}>
+        No next-week plan yet.
+      </div>
+      <div style={{color:"#64748b",fontSize:"0.74rem"}}>
+        Ask Claude Code: "Generate next week's plan" to create it.
+      </div>
+    </div>
+  );
+  if (!data) return (
+    <div style={{textAlign:"center",padding:"3rem",color:"#94a3b8",fontFamily:"monospace",fontSize:"0.75rem"}}>
+      Loading…
+    </div>
+  );
+
+  const typeStyles2 = {
+    easy:    { dot:"#10b981" },
+    quality: { dot:"#60a5fa" },
+    long:    { dot:"#a78bfa" },
+    rest:    { dot:"#cbd5e1" },
+  };
+
+  return (
+    <div style={{maxWidth:820,margin:"0 auto",padding:"1.25rem 1rem"}}>
+
+      {/* Header card */}
+      <div style={{background:"white",border:"1.5px solid #e2e8f0",borderRadius:8,
+        padding:"0.85rem 1rem",marginBottom:"1rem"}}>
+        <div style={{display:"flex",gap:"1.5rem",flexWrap:"wrap",marginBottom:"0.6rem"}}>
+          <div>
+            <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>WEEK</div>
+            <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#0f172a",fontWeight:700}}>
+              {data.dates} · Plan Wk {data.plan_week}
+            </div>
+          </div>
+          <div>
+            <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>PHASE</div>
+            <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#2563eb",fontWeight:700}}>{data.phase}</div>
+          </div>
+          <div>
+            <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>TARGET</div>
+            <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#0f172a",fontWeight:700}}>{data.total_miles} mi</div>
+          </div>
+          <div>
+            <div style={{fontFamily:"monospace",fontSize:"0.59rem",color:"#94a3b8",letterSpacing:"0.1em"}}>GENERATED</div>
+            <div style={{fontFamily:"monospace",fontSize:"0.82rem",color:"#64748b"}}>{data.generated}</div>
+          </div>
+        </div>
+        {/* dot strip */}
+        <div style={{display:"flex",gap:4,marginBottom:"0.65rem"}}>
+          {data.sessions.map((s,i) => (
+            <div key={i} style={{width:9,height:9,borderRadius:"50%",
+              background:typeStyles2[s.type]?.dot||"#cbd5e1"}}/>
+          ))}
+        </div>
+        <div style={{background:"#f0f9ff",borderLeft:"3px solid #38bdf8",
+          padding:"0.5rem 0.75rem",borderRadius:"0 4px 4px 0"}}>
+          <div style={{fontSize:"0.59rem",color:"#0284c7",fontFamily:"monospace",
+            letterSpacing:"0.1em",marginBottom:"0.2rem"}}>CONTEXT</div>
+          <div style={{fontSize:"0.73rem",color:"#374151",lineHeight:1.6}}>{data.context}</div>
+        </div>
+      </div>
+
+      {/* Session rows */}
+      <div style={{display:"flex",flexDirection:"column",gap:"0.35rem"}}>
+        {data.sessions.map((s,i) => {
+          const z = s.zone ? ZONES[s.zone] : null;
+          const isOpen = expanded === i;
+          return (
+            <div key={i} style={{
+              border:`1px solid ${z?z.border:"#e2e8f0"}`,
+              borderRadius:7,background:z?z.bg:"#f8fafc",overflow:"hidden",
+            }}>
+              <button onClick={() => setExpanded(isOpen ? null : i)}
+                style={{width:"100%",background:"none",border:"none",cursor:"pointer",
+                  textAlign:"left",padding:"0.6rem 0.75rem"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
+                  <div style={{width:34,fontFamily:"monospace",fontSize:"0.66rem",
+                    fontWeight:700,color:"#94a3b8",flexShrink:0}}>{s.day}</div>
+                  <div style={{flex:1}}>
+                    <span style={{fontSize:"0.8rem",fontWeight:600,
+                      color:z?z.color:"#374151"}}>{s.label}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexShrink:0}}>
+                    {s.miles > 0 && (
+                      <span style={{fontFamily:"monospace",fontSize:"0.75rem",
+                        color:"#374151",fontWeight:700}}>
+                        {s.miles}<span style={{color:"#94a3b8",fontSize:"0.62rem",
+                          fontWeight:400}}> mi</span>
+                      </span>
+                    )}
+                    <ZonePill zone={s.zone}/>
+                    <span style={{color:"#94a3b8",fontSize:"0.85rem"}}>{isOpen?"▴":"▾"}</span>
+                  </div>
+                </div>
+              </button>
+              {isOpen && (
+                <div style={{borderTop:`1px solid ${z?z.border:"#e2e8f0"}`,
+                  padding:"0.5rem 0.75rem 0.65rem 0.75rem"}}>
+                  <div style={{fontSize:"0.72rem",color:"#374151",lineHeight:1.6}}>{s.detail}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Coach note */}
+      <div style={{marginTop:"0.75rem",background:"#f0f9ff",borderLeft:"3px solid #38bdf8",
+        padding:"0.5rem 0.75rem",borderRadius:"0 4px 4px 0"}}>
+        <div style={{fontSize:"0.59rem",color:"#0284c7",fontFamily:"monospace",
+          letterSpacing:"0.1em",marginBottom:"0.2rem"}}>COACH NOTE</div>
+        <div style={{fontSize:"0.73rem",color:"#374151",lineHeight:1.6}}>{data.notes}</div>
+      </div>
+
+      <div style={{textAlign:"center",color:"#94a3b8",fontSize:"0.61rem",fontFamily:"monospace",
+        marginTop:"1rem",letterSpacing:"0.1em"}}>
+        ASK CLAUDE CODE "GENERATE NEXT WEEK'S PLAN" TO REFRESH
+      </div>
+    </div>
+  );
+}
+
 export default function TrainingPlan() {
   const [view, setView] = useState("plan");
   const [activeBlock, setActiveBlock] = useState("all");
@@ -753,7 +890,7 @@ export default function TrainingPlan() {
 
           {/* View tabs */}
           <div style={{display:"flex",marginTop:"1rem",borderTop:"1px solid #1e293b",paddingTop:"0.5rem",marginBottom:"-0.5rem"}}>
-            {[["plan","Training Plan"],["review","Weekly Review"]].map(([val,label])=>(
+            {[["plan","Training Plan"],["review","Weekly Review"],["next","Next Week"]].map(([val,label])=>(
               <button key={val} onClick={()=>setView(val)} style={{
                 padding:"0.4rem 1.1rem",background:"none",border:"none",cursor:"pointer",
                 fontFamily:"monospace",fontSize:"0.71rem",letterSpacing:"0.04em",
@@ -765,7 +902,7 @@ export default function TrainingPlan() {
         </div>
       </div>
 
-      {view==="review" ? <WeeklyReview/> : (
+      {view==="next" ? <NextWeek/> : view==="review" ? <WeeklyReview/> : (
       <div style={{maxWidth:820,margin:"0 auto",padding:"1.25rem 1rem"}}>
         {/* Block filter */}
         <div style={{display:"flex",gap:"0.4rem",marginBottom:"1rem",flexWrap:"wrap"}}>
